@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SynapseCode — Intelligent Adaptive Coding Tutor</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+            },
+            accent: {
+              purple: '#a855f7',
+              pink: '#ec4899',
+              emerald: '#10b981',
+              amber: '#f59e0b'
+            },
+            dark: {
+              900: '#090d16',
+              850: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+              600: '#475569'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- PrismJS for Syntax Highlighting in Chat & Editor -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-dark-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden select-none">
+
+  <!-- Top Navigation Header -->
+  <header class="h-14 border-b border-dark-700/60 bg-dark-850/80 backdrop-blur-md px-4 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <i data-lucide="brain-circuit" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold tracking-tight text-white text-base">Synapse<span class="text-cyan-400">Code</span></span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-800/60 text-cyan-300 font-mono font-medium">Adaptive Tutor v3.0</span>
+        </div>
+        <p class="text-xs text-slate-400 -mt-0.5 hidden sm:block">Intelligent pedagogical mentor with cognitive error diagnosis & persistent memory</p>
+      </div>
+    </div>
+
+    <!-- Active Profile & Quick Stats Bar -->
+    <div class="flex items-center space-x-2 sm:space-x-4">
+      <!-- Persona Badge -->
+      <div id="persona-badge" class="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-dark-800 border border-dark-700 text-xs text-slate-300 cursor-pointer hover:border-slate-500 transition" title="Click to change tutor persona">
+        <span id="persona-icon">🦉</span>
+        <span id="persona-name" class="font-medium">Socratic Mentor</span>
+        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+      </div>
+
+      <!-- Skill Level Badge -->
+      <div id="level-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-cyan-950/40 border border-cyan-700/50 text-xs text-cyan-300">
+        <i data-lucide="gauge" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span id="current-level-display" class="font-semibold uppercase tracking-wider text-[11px]">Intermediate</span>
+        <span id="elo-display" class="text-[10px] text-slate-400 font-mono">(ELO: 1240)</span>
+      </div>
+
+      <!-- Past Struggles Memory Indicator -->
+      <button id="btn-memory-toggle" class="relative flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-dark-800 hover:bg-dark-700 border border-purple-500/40 text-xs text-purple-300 transition group" title="View what the tutor remembers about your past struggles, error types, and breakthroughs">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform"></i>
+        <span class="hidden sm:inline">Memory Bank</span>
+        <span id="memory-count-badge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[10px] font-mono font-bold">3</span>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button id="btn-sound-toggle" class="p-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-400 hover:text-slate-200 transition" title="Toggle Sound Effects">
+        <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Settings / API Key Button -->
+      <button id="btn-settings" class="p-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-400 hover:text-slate-200 transition" title="Settings & Gemini AI Configuration">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Multi-Panel Workspace -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- Left Sidebar: Cognitive Profile, Mastery Radar & Session History -->
+    <aside id="sidebar-left" class="w-80 border-r border-dark-700/60 bg-dark-850 flex flex-col shrink-0 transition-all duration-300 ease-in-out z-20 overflow-hidden">
+      <!-- Sidebar Tabs -->
+      <div class="flex border-b border-dark-700/60 text-xs font-medium">
+        <button id="tab-mastery-btn" class="flex-1 py-2.5 px-3 border-b-2 border-cyan-400 text-cyan-400 flex items-center justify-center space-x-1.5 transition">
+          <i data-lucide="award" class="w-3.5 h-3.5"></i>
+          <span>Skill Mastery</span>
+        </button>
+        <button id="tab-history-btn" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-1.5 transition">
+          <i data-lucide="history" class="w-3.5 h-3.5"></i>
+          <span>Sessions (<span id="session-count">3</span>)</span>
+        </button>
+      </div>
+
+      <!-- Tab Content: Mastery & Struggles -->
+      <div id="tab-mastery" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        <!-- Student Card -->
+        <div class="p-3.5 rounded-xl bg-gradient-to-b from-dark-800 to-dark-850 border border-dark-700 relative overflow-hidden">
+          <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-500 to-cyan-500 p-0.5">
+              <div class="w-full h-full bg-dark-900 rounded-full flex items-center justify-center">
+                <span id="student-avatar" class="text-xl">👩‍💻</span>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <h3 id="student-name" class="text-sm font-semibold text-white truncate">Alex Chen</h3>
+                <span id="streak-badge" class="text-[10px] px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded flex items-center space-x-1">
+                  <span>🔥</span><span id="streak-count">4d streak</span>
+                </span>
+              </div>
+              <p id="student-title" class="text-xs text-slate-400 truncate">Algorithmic Explorer</p>
+            </div>
+          </div>
+
+          <!-- Dynamic Difficulty Adjustment Status -->
+          <div class="mt-3 pt-3 border-t border-dark-700/60 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Cognitive State:</span>
+            <span id="flow-state" class="text-emerald-400 font-mono font-medium flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Optimal Flow Zone</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Tutor's Active Cognitive Memory (Past Struggles & Successes) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-semibold text-slate-300 tracking-wide uppercase flex items-center space-x-1.5">
+              <i data-lucide="history" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Active Memory & Struggles</span>
+            </h4>
+            <span class="text-[10px] text-slate-400">Cognitive Radar</span>
+          </div>
+          
+          <div id="memory-chips-container" class="space-y-2">
+            <!-- Populated via memory-system.js -->
+          </div>
+        </div>
+
+        <!-- Skill Mastery Bars -->
+        <div class="space-y-2.5 pt-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-semibold text-slate-300 tracking-wide uppercase flex items-center space-x-1.5">
+              <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Topic Mastery</span>
+            </h4>
+            <span class="text-[10px] text-cyan-400 font-mono" id="overall-mastery-pct">68%</span>
+          </div>
+
+          <div id="mastery-bars-container" class="space-y-2.5">
+            <!-- Dynamic Mastery bars -->
+          </div>
+        </div>
+
+        <!-- Quick Scenario Simulator -->
+        <div class="pt-3 border-t border-dark-700/60">
+          <p class="text-[11px] text-slate-400 mb-2 font-medium">Quick Concept Injections:</p>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button class="preset-btn text-[11px] p-1.5 rounded bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 text-left transition truncate" data-preset="recursion_struggle">
+              🌱 Recursion Bugs
+            </button>
+            <button class="preset-btn text-[11px] p-1.5 rounded bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 text-left transition truncate" data-preset="async_struggle">
+              ⚡ Async/Promises
+            </button>
+            <button class="preset-btn text-[11px] p-1.5 rounded bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 text-left transition truncate" data-preset="two_sum">
+              🔍 Two Sum Hash
+            </button>
+            <button class="preset-btn text-[11px] p-1.5 rounded bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 text-left transition truncate" data-preset="off_by_one">
+              🐛 Off-By-One Array
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Session History -->
+      <div id="tab-history" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wide">Session Log & Milestones</span>
+          <button id="btn-clear-history" class="text-[10px] text-red-400 hover:text-red-300">Clear</button>
+        </div>
+        <div id="history-list" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Panel: The Intelligent Tutor Chat / Explanation Stream -->
+    <section class="flex-1 flex flex-col min-w-0 bg-dark-900 border-r border-dark-700/60 overflow-hidden relative">
+      
+      <!-- Interactive 4-Session Pedagogical Journey Bar -->
+      <div class="px-4 py-2 border-b border-dark-700/60 bg-dark-850/80 backdrop-blur-md flex items-center justify-between text-xs shrink-0 z-10">
+        <div class="flex items-center space-x-2 overflow-x-auto custom-scrollbar py-0.5">
+          <span class="font-semibold text-slate-300 flex items-center space-x-1 shrink-0">
+            <i data-lucide="git-branch" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Adaptive Journey:</span>
+          </span>
+          <div class="flex items-center space-x-1 shrink-0" id="journey-steps">
+            <button class="journey-step-btn px-2.5 py-1 rounded-md bg-cyan-950/60 border border-cyan-700/50 text-cyan-300 font-medium text-[11px] hover:border-cyan-400 transition" data-step="1" title="Session 1: Beginner baseline explanation and single loop challenge">
+              1. Baseline Loop
+            </button>
+            <span class="text-slate-600 text-[10px]">&rarr;</span>
+            <button class="journey-step-btn px-2.5 py-1 rounded-md bg-dark-800 border border-dark-700 text-slate-400 text-[11px] hover:text-slate-200 transition" data-step="2" title="Session 2: Tutor remembers loop fluency, introduces 2D nested matrix search">
+              2. Memory Recall
+            </button>
+            <span class="text-slate-600 text-[10px]">&rarr;</span>
+            <button class="journey-step-btn px-2.5 py-1 rounded-md bg-dark-800 border border-dark-700 text-slate-400 text-[11px] hover:text-slate-200 transition" data-step="3" title="Session 3: User struggles with nested indices; tutor detects Application Gap and alters strategy">
+              3. Struggle & Intervention
+            </button>
+            <span class="text-slate-600 text-[10px]">&rarr;</span>
+            <button class="journey-step-btn px-2.5 py-1 rounded-md bg-dark-800 border border-dark-700 text-slate-400 text-[11px] hover:text-slate-200 transition" data-step="4" title="Session 4: User achieves breakthrough; tutor resolves struggle and advances to O(N) Hash Maps">
+              4. Breakthrough & Advance
+            </button>
+          </div>
+        </div>
+        <span class="text-[10px] text-slate-400 font-mono hidden xl:inline shrink-0">Simulate 4-Session Adaptive Loop</span>
+      </div>
+
+      <!-- Tutor Dialogue Flow -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar">
+        <!-- Messages rendered dynamically here -->
+      </div>
+
+      <!-- Input Bar (Paste Code or Ask Question) -->
+      <div class="p-3 sm:p-4 bg-dark-850/90 border-t border-dark-700/60 backdrop-blur-md">
+        <!-- Mode toggles -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-1 bg-dark-800 p-0.5 rounded-lg border border-dark-700 text-xs">
+            <button id="mode-explain" class="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 font-medium transition flex items-center space-x-1">
+              <i data-lucide="code" class="w-3.5 h-3.5"></i>
+              <span>Explain Code</span>
+            </button>
+            <button id="mode-question" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition flex items-center space-x-1">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+              <span>Ask Question</span>
+            </button>
+            <button id="mode-challenge" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 transition flex items-center space-x-1">
+              <i data-lucide="swords" class="w-3.5 h-3.5"></i>
+              <span>Request Challenge</span>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-2 text-xs">
+            <!-- Language selector -->
+            <select id="language-select" class="bg-dark-800 border border-dark-700 rounded px-2 py-1 text-slate-300 text-xs focus:outline-none focus:border-cyan-500">
+              <option value="javascript">JavaScript (ES2024)</option>
+              <option value="python">Python 3</option>
+              <option value="typescript">TypeScript</option>
+              <option value="cpp">C++ 20</option>
+              <option value="java">Java 17</option>
+              <option value="go">Go 1.22</option>
+              <option value="rust">Rust 2021</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Textarea input -->
+        <div class="relative rounded-xl border border-dark-700 focus-within:border-cyan-500 transition-colors bg-dark-900 shadow-inner">
+          <textarea id="user-input" rows="3" class="w-full bg-transparent px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none font-mono custom-scrollbar" placeholder="Paste your code snippet or ask: 'Why does my recursive function hit recursion depth limit?'"></textarea>
+          
+          <div class="flex items-center justify-between px-3 py-2 border-t border-dark-800/80 bg-dark-900/60 rounded-b-xl">
+            <div class="flex items-center space-x-2 text-xs text-slate-400">
+              <span class="text-[11px] hidden sm:inline"><kbd class="px-1.5 py-0.5 rounded bg-dark-800 border border-dark-700 text-slate-300 font-mono text-[10px]">Ctrl+Enter</kbd> to submit</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="btn-clear-input" class="p-1.5 text-slate-400 hover:text-slate-200 rounded transition" title="Clear input">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+              <button id="btn-submit" class="px-4 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-xs rounded-lg shadow-md shadow-cyan-500/20 flex items-center space-x-1.5 transition disabled:opacity-50">
+                <span>Send to Mentor</span>
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Panel: Tailored Challenge Arena & Interactive Code Sandbox -->
+    <section id="challenge-panel" class="w-[480px] lg:w-[530px] xl:w-[580px] bg-dark-850 flex flex-col shrink-0 border-l border-dark-700/60 transition-all duration-300 z-10">
+      
+      <!-- Challenge Header & Controls -->
+      <div class="p-3 border-b border-dark-700/60 bg-dark-800/60 flex items-center justify-between">
+        <div class="flex items-center space-x-2 min-w-0">
+          <div class="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <i data-lucide="target" class="w-3.5 h-3.5"></i>
+          </div>
+          <div class="truncate">
+            <span class="text-xs font-semibold text-white truncate block" id="challenge-title">Active Challenge: Boundary Guard</span>
+            <span class="text-[10px] text-emerald-400 font-mono" id="challenge-difficulty-tag">LEVEL: INTERMEDIATE • +35 XP</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+          <!-- Progressive Hint Button -->
+          <button id="btn-hint" class="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium flex items-center space-x-1 transition" title="Get a progressive 3-tier hint without spoiling the answer">
+            <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>
+            <span id="hint-label">Hint (0/3)</span>
+          </button>
+
+          <!-- Toggle Challenge Panel Width / Collapse -->
+          <button id="btn-toggle-editor" class="p-1 rounded bg-dark-700 text-slate-400 hover:text-slate-200" title="Collapse / Expand panel">
+            <i data-lucide="panel-right-close" id="panel-icon" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Challenge Instructions Card -->
+      <div id="challenge-meta-card" class="p-3 bg-dark-900/60 border-b border-dark-700/60 text-xs space-y-2">
+        <div id="challenge-description" class="text-slate-300 leading-relaxed">
+          <!-- Challenge description text -->
+        </div>
+
+        <!-- Memory Continuity Callout -->
+        <div id="challenge-memory-note" class="p-2 rounded-lg bg-purple-950/40 border border-purple-800/50 text-[11px] text-purple-300 flex items-start space-x-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="font-medium text-purple-200">Memory Continuity:</strong>
+            <span id="challenge-memory-text">In your previous session, you struggled with off-by-one index bounds in loop termination. This challenge tests that exact invariant!</span>
+          </div>
+        </div>
+
+        <!-- Hints Container -->
+        <div id="hints-container" class="space-y-1.5 pt-1 hidden">
+          <!-- Hints inserted here -->
+        </div>
+      </div>
+
+      <!-- Interactive Code Editor -->
+      <div class="flex-1 flex flex-col min-h-0 bg-[#1e1e1e] relative">
+        <div class="h-8 bg-dark-800 border-b border-dark-700/80 px-3 flex items-center justify-between text-xs text-slate-400">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="file-code" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="editor-filename" class="font-mono text-[11px] text-slate-300">solution.js</span>
+          </div>
+          <div class="flex items-center space-x-2 text-[11px]">
+            <button id="btn-reset-code" class="hover:text-slate-200 flex items-center space-x-1" title="Reset starter code">
+              <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+              <span>Reset Code</span>
+            </button>
+            <span class="text-dark-600">|</span>
+            <span class="text-[10px] text-slate-500">Live Browser Engine</span>
+          </div>
+        </div>
+
+        <!-- Monaco-style code textarea with line numbers -->
+        <div class="flex-1 relative flex overflow-hidden">
+          <div id="editor-line-numbers" class="w-10 bg-[#181818] text-[#5a5a5a] font-mono text-xs pt-2.5 select-none text-right pr-2 shrink-0 border-r border-[#282828]">
+            1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10
+          </div>
+          <textarea id="code-editor" class="flex-1 bg-[#1e1e1e] text-[#d4d4d4] font-mono text-xs p-2.5 resize-none focus:outline-none leading-relaxed tab-size-2 custom-scrollbar whitespace-pre" spellcheck="false" autocomplete="off"></textarea>
+        </div>
+      </div>
+
+      <!-- Test Cases, State Tracer & Console Output Panel -->
+      <div class="h-48 border-t border-dark-700/80 bg-dark-900 flex flex-col shrink-0">
+        <!-- Test Panel Tabs -->
+        <div class="h-8 border-b border-dark-700/60 px-3 flex items-center justify-between bg-dark-850">
+          <div class="flex items-center space-x-3 text-xs">
+            <button id="tab-test-cases-btn" class="text-cyan-400 font-medium flex items-center space-x-1">
+              <i data-lucide="check-circle" class="w-3 h-3"></i>
+              <span>Test Cases</span>
+            </button>
+            <button id="tab-tracer-btn" class="text-slate-400 hover:text-slate-200 flex items-center space-x-1">
+              <i data-lucide="activity" class="w-3 h-3"></i>
+              <span>State Tracer</span>
+            </button>
+            <button id="tab-console-btn" class="text-slate-400 hover:text-slate-200 flex items-center space-x-1">
+              <i data-lucide="terminal" class="w-3 h-3"></i>
+              <span>Console Output</span>
+            </button>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <!-- Run Tests Button -->
+            <button id="btn-run-tests" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium flex items-center space-x-1.5 shadow transition">
+              <i data-lucide="play" class="w-3 h-3"></i>
+              <span>Run Code (Ctrl+Enter)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Test Results View -->
+        <div id="test-results-view" class="flex-1 overflow-y-auto p-2.5 space-y-1.5 custom-scrollbar font-mono text-xs">
+          <!-- Populated by sandbox-runner.js -->
+        </div>
+
+        <!-- State Tracer View -->
+        <div id="state-tracer-view" class="flex-1 overflow-y-auto p-2.5 font-mono text-xs text-slate-300 bg-black/40 custom-scrollbar hidden space-y-2">
+          <div class="text-slate-500 italic">// Run your code to inspect step execution trace and assertion diffs</div>
+        </div>
+
+        <!-- Console Output View -->
+        <div id="console-output-view" class="flex-1 overflow-y-auto p-2.5 font-mono text-xs text-slate-300 bg-black/40 custom-scrollbar hidden">
+          <div class="text-slate-500 italic">// Run your code to view console.log output</div>
+        </div>
+      </div>
+
+      <!-- Difficulty Feedback Toolbar -->
+      <div class="p-2 bg-dark-850 border-t border-dark-700/60 flex items-center justify-between text-[11px] text-slate-400">
+        <span>How does this challenge feel?</span>
+        <div class="flex items-center space-x-1">
+          <button class="feedback-rate-btn px-2 py-0.5 rounded bg-dark-800 hover:bg-cyan-950 hover:text-cyan-300 border border-dark-700 transition" data-rate="too_easy">
+            🐣 Too Easy
+          </button>
+          <button class="feedback-rate-btn px-2 py-0.5 rounded bg-dark-800 hover:bg-emerald-950 hover:text-emerald-300 border border-dark-700 transition" data-rate="just_right">
+            🎯 Just Right
+          </button>
+          <button class="feedback-rate-btn px-2 py-0.5 rounded bg-dark-800 hover:bg-red-950 hover:text-red-300 border border-dark-700 transition" data-rate="too_hard">
+            🔥 Too Hard
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Cognitive Memory Bank Inspector -->
+  <div id="modal-memory" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-2xl bg-dark-850 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-800/80">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
+            <i data-lucide="brain" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">Tutor's Cognitive Memory Bank</h3>
+            <p class="text-xs text-slate-400">Inspect, customize, or export what the tutor remembers about your coding journey</p>
+          </div>
+        </div>
+        <button id="btn-close-memory-modal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-dark-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs">
+        <div class="p-3 rounded-xl bg-purple-950/30 border border-purple-800/40 text-purple-200 leading-relaxed">
+          💡 The tutor maintains a persistent cognitive model: distinguishing between <strong>Careless Mistakes</strong>, <strong>Application Gaps</strong>, and <strong>Knowledge Gaps</strong>. When you ask questions or submit code, the tutor references these memories to scaffold your progress.
+        </div>
+
+        <!-- Add Manual Memory Item -->
+        <div class="p-3 rounded-xl bg-dark-800 border border-dark-700 space-y-2">
+          <h4 class="font-semibold text-slate-200">Add Custom Memory or Goal</h4>
+          <div class="flex gap-2">
+            <select id="new-memory-type" class="bg-dark-900 border border-dark-700 rounded-lg px-2.5 py-1.5 text-slate-300">
+              <option value="struggle">Past Struggle</option>
+              <option value="success">Past Success</option>
+              <option value="preference">Learning Preference</option>
+            </select>
+            <input type="text" id="new-memory-text" class="flex-1 bg-dark-900 border border-dark-700 rounded-lg px-3 py-1.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500" placeholder="e.g. Struggled with dynamic programming memoization tables...">
+            <button id="btn-add-memory" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition">
+              Add Memory
+            </button>
+          </div>
+        </div>
+
+        <!-- All Memories Categorized -->
+        <div class="space-y-3">
+          <h4 class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">Recorded Memory Items</h4>
+          <div id="modal-memory-list" class="space-y-2">
+            <!-- Rendered by memory-system.js -->
+          </div>
+        </div>
+
+        <!-- Raw JSON Data Export / Import -->
+        <div class="pt-3 border-t border-dark-700 flex items-center justify-between">
+          <div class="space-x-2">
+            <button id="btn-export-memory" class="px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 transition">
+              Export Profile (JSON)
+            </button>
+            <button id="btn-import-memory" class="px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 border border-dark-700 text-slate-300 transition">
+              Import Profile
+            </button>
+            <input type="file" id="file-import-memory" class="hidden" accept=".json">
+          </div>
+          <button id="btn-reset-all-memory" class="text-red-400 hover:text-red-300 text-xs">
+            Reset Everything
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tutor Persona & AI Settings -->
+  <div id="modal-settings" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-lg bg-dark-850 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Header -->
+      <div class="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-800/80">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">Tutor Settings & AI Configuration</h3>
+            <p class="text-xs text-slate-400">Customize tutor teaching persona and AI model</p>
+          </div>
+        </div>
+        <button id="btn-close-settings-modal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-dark-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs">
+        
+        <!-- Persona Selection -->
+        <div class="space-y-2">
+          <label class="block font-semibold text-slate-200">Tutor Style & Persona</label>
+          <div class="grid grid-cols-2 gap-2" id="persona-selector-grid">
+            <div class="persona-card p-3 rounded-xl border border-cyan-500/50 bg-cyan-950/20 cursor-pointer transition" data-persona="socratic">
+              <div class="text-lg mb-1">🦉 Socratic Mentor</div>
+              <div class="text-[11px] text-slate-400">Guides through first-principles inquiry, mental models, and deep conceptual prompts.</div>
+            </div>
+            <div class="persona-card p-3 rounded-xl border border-dark-700 bg-dark-800 hover:border-slate-500 cursor-pointer transition" data-persona="senior_dev">
+              <div class="text-lg mb-1">🛠️ Senior Engineer</div>
+              <div class="text-[11px] text-slate-400">Focuses on production idioms, defensive bounds, clean architecture, and tests.</div>
+            </div>
+            <div class="persona-card p-3 rounded-xl border border-dark-700 bg-dark-800 hover:border-slate-500 cursor-pointer transition" data-persona="visual">
+              <div class="text-lg mb-1">🎨 Visual Intuitive</div>
+              <div class="text-[11px] text-slate-400">Uses vivid analogies, state diagrams, and step-by-step physical metaphors.</div>
+            </div>
+            <div class="persona-card p-3 rounded-xl border border-dark-700 bg-dark-800 hover:border-slate-500 cursor-pointer transition" data-persona="speedrun">
+              <div class="text-lg mb-1">⚡ Speed-Run Coach</div>
+              <div class="text-[11px] text-slate-400">Concise, interview-focused, pattern recognition, and big-O efficiency.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Experience Level Override -->
+        <div class="space-y-2">
+          <label class="block font-semibold text-slate-200">Target Learning Level</label>
+          <div class="flex gap-2">
+            <button class="level-select-btn flex-1 py-2 rounded-lg border border-dark-700 bg-dark-800 hover:border-slate-500 text-slate-300 font-medium" data-level="Beginner">
+              🌱 Beginner
+            </button>
+            <button class="level-select-btn flex-1 py-2 rounded-lg border border-cyan-500 bg-cyan-950/30 text-cyan-300 font-medium" data-level="Intermediate">
+              🚀 Intermediate
+            </button>
+            <button class="level-select-btn flex-1 py-2 rounded-lg border border-dark-700 bg-dark-800 hover:border-slate-500 text-slate-300 font-medium" data-level="Advanced">
+              💎 Advanced
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">The tutor automatically adapts this as you solve or struggle with challenges.</p>
+        </div>
+
+        <!-- Optional Gemini API Key -->
+        <div class="space-y-2 pt-2 border-t border-dark-700">
+          <div class="flex items-center justify-between">
+            <label class="font-semibold text-slate-200">Gemini 2.0 AI Engine (Optional)</label>
+            <span class="text-[10px] text-emerald-400 font-mono">Autonomous Offline Active</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            The tutor includes a complete autonomous offline pedagogical brain out of the box! Optionally enter a Google Gemini API Key to enable real-time cloud LLM generation for infinite question variety.
+          </p>
+          <div class="space-y-1.5">
+            <input type="password" id="gemini-api-key" class="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-slate-200 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500" placeholder="AIzaSy...">
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span>Key is stored securely in your browser's local storage.</span>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-cyan-400 hover:underline">Get Free Gemini Key &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="pt-3 border-t border-dark-700 flex justify-end">
+          <button id="btn-save-settings" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition shadow-lg shadow-cyan-600/20">
+            Save Preferences
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="memory-system.js"></script>
+  <script src="sandbox-runner.js"></script>
+  <script src="tutor-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
