@@ -1,0 +1,7 @@
+services:
+  tutor-app:
+    build: .
+    container_name: synapse-code-tutor
+    ports:
+      - "8080:80"
+    restart: always
