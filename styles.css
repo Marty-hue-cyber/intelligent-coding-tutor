@@ -1,126 +1,170 @@
-/* Custom Styles for SynapseCode Intelligent Coding Tutor */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+/* ── Custom Scrollbar ── */
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 99px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.5); }
 
-:root {
-  --scrollbar-thumb: #334155;
-  --scrollbar-thumb-hover: #475569;
+/* ── Chat Bubbles ── */
+.msg-tutor {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeUp 0.3s ease-out;
 }
-
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.msg-user {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeUp 0.3s ease-out;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.msg-tutor .bubble {
+  background: #12122e;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px 18px 18px 18px;
+  padding: 14px 16px;
+  max-width: 85%;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #cbd5e1;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 9999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-}
-
-/* Code Editor Specific Styling */
-#code-editor {
+.msg-user .bubble {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 18px 4px 18px 18px;
+  padding: 12px 16px;
+  max-width: 75%;
+  font-size: 0.875rem;
+  color: white;
   line-height: 1.6;
+}
+
+/* ── Tutor avatar ── */
+.tutor-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* ── Code blocks in chat ── */
+.bubble pre {
+  background: #0d0d1f !important;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+  margin: 10px 0;
+  font-size: 0.8rem;
+}
+.bubble code:not([class]) {
+  background: rgba(139,92,246,0.15);
+  color: #a78bfa;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.82em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.bubble strong { color: #fff; }
+.bubble em { color: #a78bfa; font-style: normal; }
+.bubble ul { list-style: none; padding-left: 0; margin: 8px 0; }
+.bubble ul li { padding: 3px 0 3px 20px; position: relative; color: #94a3b8; }
+.bubble ul li::before { content: '▸'; position: absolute; left: 0; color: #7c3aed; }
+
+/* ── Typing indicator ── */
+.typing-dots { display: flex; gap: 5px; padding: 6px 0; align-items: center; }
+.typing-dots span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #7c3aed;
+  opacity: 0.4;
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Hint cards ── */
+.hint-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.25);
+  font-size: 0.8rem;
+  color: #fcd34d;
+  line-height: 1.6;
+}
+.hint-card strong { color: #fbbf24; }
+
+/* ── Test result items ── */
+.test-pass { color: #34d399; }
+.test-fail { color: #f87171; }
+.test-error { color: #fb923c; }
+
+/* ── Persona cards active state ── */
+.persona-card.active {
+  border-color: rgba(139,92,246,0.6);
+  background: rgba(139,92,246,0.12);
+}
+
+/* ── Level select active ── */
+.level-select-btn.active {
+  border-color: #7c3aed;
+  background: rgba(124,58,237,0.15);
+  color: #c4b5fd;
+}
+
+/* ── Screen fade ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Quick action card active ── */
+.quick-action-btn.active {
+  border-color: rgba(139,92,246,0.6);
+  background: rgba(139,92,246,0.1);
+}
+
+/* ── Code editor ── */
+#code-editor {
   tab-size: 2;
   -moz-tab-size: 2;
+  caret-color: #a78bfa;
 }
 
-#editor-line-numbers {
-  line-height: 1.6;
+/* ── Memory chips in modal ── */
+.memory-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+.memory-chip.struggle { border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.04); }
+.memory-chip.success  { border-color: rgba(52,211,153,0.2);  background: rgba(52,211,153,0.04); }
+
+/* ── Glow on focus ── */
+#user-input:focus, #chat-input:focus {
+  caret-color: #a78bfa;
 }
 
-/* Chat bubble styling */
-.tutor-bubble {
-  background: radial-gradient(circle at top left, #1e293b, #0f172a);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-}
-
-.user-bubble {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-}
-
-/* Glassmorphism Accents */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* Pulse Glow Effect for Active Memory Continuity */
-@keyframes subtle-glow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
-    border-color: rgba(168, 85, 247, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
-    border-color: rgba(168, 85, 247, 0.7);
-  }
-}
-
-.memory-active-glow {
-  animation: subtle-glow 3s infinite ease-in-out;
-}
-
-/* Code block container inside chat */
-.code-explanation-block pre {
-  margin: 0 !important;
-  border-radius: 0.75rem !important;
-  font-size: 0.8125rem !important;
-}
-
-/* Test result badge animations */
-@keyframes pop-in {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.test-badge-enter {
-  animation: pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Persona active selection */
-.persona-card.active {
-  border-color: #06b6d4 !important;
-  background-color: rgba(6, 182, 212, 0.12) !important;
-  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
-}
-
-/* Level active selection */
-.level-select-btn.active {
-  border-color: #06b6d4 !important;
-  background-color: rgba(6, 182, 212, 0.2) !important;
-  color: #22d3ee !important;
-}
-
-/* Smooth typing cursor */
-.typing-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #22d3ee;
-  animation: typing-bounce 1.4s infinite ease-in-out both;
-}
-
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
-}
-
-/* Perspective toggle buttons */
-.tab-persp {
-  transition: all 0.15s ease-in-out;
-}
-.tab-persp:hover {
-  background-color: rgba(51, 65, 85, 0.6);
+/* ── Smooth screen transitions ── */
+#screen-home, #screen-chat {
+  transition: opacity 0.25s ease;
 }
